@@ -23,7 +23,6 @@ public class Main extends JavaPlugin implements Listener {
 		}
 
 		configManager = new ConfigManager(this);
-	    configManager.setupConfig();
 	    configManager.setupKillConfig(); // Add this line to setup the killConfig
 	    
 	    configManager.saveKillConfig();
@@ -31,14 +30,17 @@ public class Main extends JavaPlugin implements Listener {
 		
 		
 	    Bukkit.getPluginManager().registerEvents(new KillEventListener(configManager), this);
+	    Bukkit.getPluginManager().registerEvents(new ServerReloadListener(configManager), this);
 
-		getCommand("createLeaderboard").setExecutor(new CreateLeaderboard(configManager));
+
+	    
+		getCommand("checkKills").setExecutor(new CreateLeaderboard(configManager));
 
 	}
 
 	@Override
 	public void onDisable() {
-		configManager.saveKillConfig();
+	    configManager.saveKillConfig();
 
 	}
 

@@ -25,8 +25,8 @@ public class KillEventListener implements Listener {
             UUID playerUUID = killer.getUniqueId();
             configManager.incrementKills(playerUUID);
             configManager.saveKillConfig();
-            killer.sendMessage("hi");
         }
     }
+
 
 }

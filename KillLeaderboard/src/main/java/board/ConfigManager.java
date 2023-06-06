@@ -23,26 +23,18 @@ public class ConfigManager {
         this.kills = new HashMap<>();
     }
 
-    public void setupConfig() {
-        configFile = new File(plugin.getDataFolder(), "config.yml");
-        if (!configFile.exists()) {
-            plugin.saveResource("config.yml", false);
-        }
-        config = YamlConfiguration.loadConfiguration(configFile);
-    }
-
     public void setupKillConfig() {
         killConfigFile = new File(plugin.getDataFolder(), "kills.yml");
+            
         if (!killConfigFile.exists()) {
-            try {
-                killConfigFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            killConfig = new YamlConfiguration();
+        } else {
+            killConfig = YamlConfiguration.loadConfiguration(killConfigFile);
+            loadKillsFromConfig(); // Call the method to load kills data from the file
         }
-        killConfig = YamlConfiguration.loadConfiguration(killConfigFile);
-        loadKillsFromConfig();
     }
+
+
 
     private void loadKillsFromConfig() {
         if (killConfig.isConfigurationSection("kills")) {
@@ -72,5 +64,11 @@ public class ConfigManager {
     public void incrementKills(UUID playerUUID) {
         int currentKills = getKills(playerUUID);
         kills.put(playerUUID, currentKills + 1);
+        saveKillConfig();
     }
+
+
+
+
+
 }

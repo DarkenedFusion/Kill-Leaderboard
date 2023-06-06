@@ -15,7 +15,7 @@ public class CreateLeaderboard implements CommandExecutor, Listener {
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (label.equalsIgnoreCase("createLeaderboard")) {
+        if (label.equalsIgnoreCase("checkKills")) {
             if (!(sender instanceof Player)) {
                 sender.sendMessage("Console can not use this command");
                 return true;
