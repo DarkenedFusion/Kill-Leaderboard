@@ -1,0 +1,9 @@
+name: KillLeaderboard
+version: 1.0
+main: board.Main
+author: Fusion
+
+commands:
+  createLeaderboard:
+    description: "Creates a leaderboard"
+    usage: "/createLeaderboard"
