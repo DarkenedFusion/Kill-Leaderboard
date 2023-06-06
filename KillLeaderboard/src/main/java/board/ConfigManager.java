@@ -27,14 +27,14 @@ public class ConfigManager {
     private File killConfigFile;
     private YamlConfiguration killConfig;
     private Map<UUID, Integer> kills;
-    private HolographicDisplaysAPI hologramsAPI;
-    private Hologram hologram;
+    private Map<UUID, String> playerNames;
     private Location hologramLocation;
+    private Hologram hologram;
 
     public ConfigManager(Plugin plugin) {
         this.plugin = plugin;
         this.kills = new HashMap<>();
-        this.hologramsAPI = HolographicDisplaysAPI.get(plugin);
+        this.playerNames = new HashMap<>();
     }
 
     public void setupKillConfig() {
@@ -44,12 +44,7 @@ public class ConfigManager {
             killConfig = new YamlConfiguration();
         } else {
             killConfig = YamlConfiguration.loadConfiguration(killConfigFile);
-            loadKillsFromConfig(); // Call the method to load kills data from the file
-        }
-        
-        // Load the hologram location from the config file
-        if (killConfig.contains("hologramLocation")) {
-            hologramLocation = (Location) killConfig.get("hologramLocation");
+            loadKillsFromConfig();
         }
     }
 
@@ -58,7 +53,9 @@ public class ConfigManager {
             for (String key : killConfig.getConfigurationSection("kills").getKeys(false)) {
                 UUID playerUUID = UUID.fromString(key);
                 int kills = killConfig.getInt("kills." + key);
+                String playerName = killConfig.getString("playerNames." + key);
                 this.kills.put(playerUUID, kills);
+                this.playerNames.put(playerUUID, playerName);
             }
         }
     }
@@ -66,13 +63,8 @@ public class ConfigManager {
     public void saveKillConfig() {
         for (Map.Entry<UUID, Integer> entry : kills.entrySet()) {
             killConfig.set("kills." + entry.getKey().toString(), entry.getValue());
+            killConfig.set("playerNames." + entry.getKey().toString(), getPlayerName(entry.getKey()));
         }
-        
-        // Save the hologram location to the config file
-        if (hologramLocation != null) {
-            killConfig.set("hologramLocation", hologramLocation);
-        }
-        
         try {
             killConfig.save(killConfigFile);
         } catch (IOException e) {
@@ -87,38 +79,67 @@ public class ConfigManager {
     public void incrementKills(UUID playerUUID) {
         int currentKills = getKills(playerUUID);
         kills.put(playerUUID, currentKills + 1);
+        playerNames.put(playerUUID, Bukkit.getPlayer(playerUUID).getName());
         saveKillConfig();
     }
-    
+
     public List<String> getTopPlayers() {
         List<String> topPlayers = new ArrayList<>();
-        
+
         List<Map.Entry<UUID, Integer>> sortedKills = new ArrayList<>(kills.entrySet());
         sortedKills.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
-        
+
         for (int i = 0; i < 10; i++) {
             if (i < sortedKills.size()) {
                 UUID playerUUID = sortedKills.get(i).getKey();
                 int kills = sortedKills.get(i).getValue();
-                Player player = Bukkit.getPlayer(playerUUID);
-                String playerName = (player != null) ? player.getName() : "Unknown";
+                String playerName = getPlayerName(playerUUID);
                 topPlayers.add(playerName + ": " + kills);
             } else {
                 topPlayers.add("");
             }
         }
-        
+
         return topPlayers;
     }
-    
+
+    private String getPlayerName(UUID playerUUID) {
+        String playerName = playerNames.get(playerUUID);
+        if (playerName == null) {
+            Player player = Bukkit.getPlayer(playerUUID);
+            if (player != null) {
+                playerName = player.getName();
+                playerNames.put(playerUUID, playerName);
+            }
+        }
+        return playerName;
+    }
+
+    public void createHologram(Location location) {
+        hologramLocation = location;
+        
+        if (hologram != null) {
+            hologram.delete(); // Delete the existing hologram if it exists
+        }
+        
+        hologram = HolographicDisplaysAPI.get(plugin).createHologram(location);
+        List<String> topPlayers = getTopPlayers();
+
+        hologram.getLines().clear();
+        hologram.getLines().appendText(ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "Leaderboard " + ChatColor.GRAY + "(Kills)");
+
+        for (String playerLine : topPlayers) {
+            hologram.getLines().appendText(playerLine);
+        }
+    }
+
     public void refreshLeaderboard() {
         if (hologram != null) {
-            hologram.getLines().clear(); // Clear the existing lines
-            
             List<String> topPlayers = getTopPlayers();
-            
+
+            hologram.getLines().clear();
             hologram.getLines().appendText(ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "Leaderboard " + ChatColor.GRAY + "(Kills)");
-            
+
             for (String playerLine : topPlayers) {
                 hologram.getLines().appendText(playerLine);
             }
@@ -131,13 +152,5 @@ public class ConfigManager {
 
     public Location getHologramLocation() {
         return hologramLocation;
-    }
-    
-    public void createHologram(Location location) {
-        this.hologram = hologramsAPI.createHologram(location);
-    }
-
-    public Hologram getHologram() {
-        return hologram;
     }
 }
