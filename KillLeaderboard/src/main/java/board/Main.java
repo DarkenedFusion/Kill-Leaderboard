@@ -34,7 +34,9 @@ public class Main extends JavaPlugin implements Listener {
 
 
 	    
-		getCommand("checkKills").setExecutor(new CreateLeaderboard(configManager));
+		getCommand("checkKills").setExecutor(new CheckKillCommand(configManager));
+	    getCommand("createHologram").setExecutor(new CreateHologram(configManager));
+	    getCommand("refreshLeaderboard").setExecutor(new RefreshLeaderboard(configManager));
 
 	}
 
