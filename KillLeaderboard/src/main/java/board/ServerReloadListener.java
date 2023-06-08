@@ -14,8 +14,12 @@ public class ServerReloadListener implements Listener {
 
     @EventHandler
     public void onServerReload(ServerCommandEvent event) {
-        if (event.getCommand().equalsIgnoreCase("reload")) {
-            configManager.saveKillConfig();
+        if (event.getCommand().equalsIgnoreCase("reload") && event.getSender().isOp()) {
+            if (configManager.getHologramLocation() != null) {
+                configManager.refreshLeaderboard();
+            } else {
+                configManager.createHologram(configManager.getHologramLocation());
+            }
         }
     }
 }

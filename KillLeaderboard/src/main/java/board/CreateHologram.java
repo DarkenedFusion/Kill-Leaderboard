@@ -17,7 +17,7 @@ public class CreateHologram implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (label.equalsIgnoreCase("createhologram")) {
+        if (label.equalsIgnoreCase("createhologram") && sender.isOp()) {
             if (!(sender instanceof Player)) {
                 sender.sendMessage("Only players can use this command.");
                 return true;
